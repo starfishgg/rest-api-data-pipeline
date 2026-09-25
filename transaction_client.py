@@ -7,6 +7,8 @@ from the FastAPI REST API.
 
 import requests
 
+from pyspark.sql import SparkSession, DataFrame
+
 
 
 
@@ -64,7 +66,7 @@ class TransactionClient:
             )
 
             # TEST PRINT TO CONFIRM WORKING
-            print("Retrieved:", transactions)
+            # print("Retrieved:", transactions)
 
             # if transactions are empty, we are finished 
             # populating all_transactions
@@ -81,6 +83,28 @@ class TransactionClient:
         return all_transactions
 
 
+    def create_dataframe(
+            self,
+            transactions: list[dict]
+    ) -> DataFrame:
+        """
+        Convert transaction data into a PySpark DataFrame.
+        """
+
+        # Create a Spark session, which is the entry point for
+        # working with DataFrames and other Spark functionality.
+        spark: SparkSession = (
+            SparkSession.builder
+            .appName("TransactionAnalysis")
+            .getOrCreate()
+        )
+
+        # Convert the list of Python dictionaries into a Spark DataFrame.
+        dataframe: DataFrame = spark.createDataFrame(
+            transactions
+        )
+
+        return dataframe
 
 
 if __name__ == "__main__":
@@ -93,4 +117,12 @@ if __name__ == "__main__":
         limit=2
     )
 
-    print(transactions)
+    # Convert the API data into a Spark DataFrame
+    dataframe = client.create_dataframe(transactions)
+
+    # Display the DataFrame
+    dataframe.show()
+
+    # Stop the Spark session when processing is complete.
+    dataframe.sparkSession.stop()
+
