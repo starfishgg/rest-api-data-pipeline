@@ -28,3 +28,6 @@ derby.log
 # OS
 .DS_Store
 Thumbs.db
+
+# Parquet export files
+output/
